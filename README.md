@@ -3,4 +3,4 @@ A simple YouTube-to-mp3 downloader written for my dad to use in a single day. It
 
 ---------------------------------------------
 
-29/01/2020: Added video downloading
+29/01/2020: Added video downloading & automatic youtube-dl updates (requires pip). Accidentally translated the application in Italian.  
