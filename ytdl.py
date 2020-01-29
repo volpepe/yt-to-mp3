@@ -7,10 +7,11 @@ from io import StringIO
 import threading
 import time
 import pyperclip
+import os
 
 #selecting best audio quality available
 #downloader will try to convert the downloaded video into mp3 format
-ydl_opts = {
+ydl_opts_audio = {
     'format': 'bestaudio/best',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
@@ -19,10 +20,19 @@ ydl_opts = {
     }],
 }
 
+ytdl_opts_video = {
+    'format': 'bestvideo/best',
+    'extension': 'mp4'
+}
+
+#check for yt-dl updates
+print("Controllo aggiornamenti...")
+os.system("python -m pip install --upgrade youtube_dl --user")
+
 #general application setup
 root = Tk()
 root.title('YT Downloader - By volpepe')
-root.geometry('800x500')
+root.geometry('900x500')
 
 #this variable will contain the link inserted by the user
 link_text = StringVar()
@@ -31,7 +41,7 @@ out = StringIO()
 sys.stdout = out
 
 #creating the instruction label
-label = Label(root, text='Paste download link:', font=(12), pady=20)
+label = Label(root, text='Incolla qui il link:', font=(12), pady=20)
 label.grid(row=0, column=0, padx=5)
 
 #creating the input space (entry)
@@ -71,15 +81,16 @@ class out_show_thread(threading.Thread):
         self.running = False
 
 class download_thread(threading.Thread):
-    def __init__(self): 
+    def __init__(self, ytdl_opts): 
         threading.Thread.__init__(self) 
+        self.ytdl_opts = ytdl_opts
         self.running = False
         self.x = out_show_thread()
         self.x.start()
 
     def run(self):
         self.running = True
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(self.ytdl_opts) as ydl:
             ydl.download([link_text.get()])
         self.x.stop()
         self.x.join()
@@ -88,7 +99,7 @@ class download_thread(threading.Thread):
         #clean slate
         text.config(state=NORMAL)
         text.delete(1.0, END)
-        text.insert(1.0, "Done!!!!")
+        text.insert(1.0, "Finito!!!!")
         text.config(state=DISABLED)
         out.truncate(0)
         out.seek(0)
@@ -96,18 +107,25 @@ class download_thread(threading.Thread):
 ####################################################
 
 def start_download():
-    y = download_thread()
+    y = download_thread(ydl_opts_audio)
+    y.start()
+
+def start_download_video():
+    y = download_thread(ytdl_opts_video)
     y.start()
 
 def paste():
     entry.insert(0, pyperclip.paste())
 
 #creating the download button
-dl_button = Button(root, text='Download', command=start_download, bg='brown',fg='white')
+dl_button = Button(root, text='Download Audio', command=start_download, bg='brown',fg='white')
 dl_button.grid(row=0, column=2)  
 
+dl_button = Button(root, text='Download Video', command=start_download_video, bg='brown',fg='white')
+dl_button.grid(row=0, column=3, padx=20)  
+
 #create the paste button
-pt_button = Button(root, text='Paste', command=paste, bg='brown', fg='white')
-pt_button.grid(row=0, column=3, padx=20)  
+pt_button = Button(root, text='Incolla', command=paste, bg='brown', fg='white')
+pt_button.grid(row=0, column=4, padx=10)  
 
 root.mainloop()
