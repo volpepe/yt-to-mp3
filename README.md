@@ -4,3 +4,7 @@ A simple YouTube-to-mp3 downloader written for my dad to use in a single day. It
 ---------------------------------------------
 
 29/01/2020: Added video downloading & automatic youtube-dl updates (requires pip). Accidentally translated the application in Italian.  
+
+---------------------------------------------
+
+24/05/2020: Greatly messed up things during the last few months, had to rewrite the app from scratch: that's what ytdl_2.py is. Actually got a chance to finally add user choice of starting and ending time. Also removed the in-app console, which was nice for me, but visually horrifying for my "clients". Video download is still wip as the default mp4 format downloaded by youtube-dl is not compatible with Vegas which is the program I use for video editing.
