@@ -99,27 +99,23 @@ class download_thread(threading.Thread):
     def run(self):
         self.running = True
         start, end = self.check_timings()
+        command=""
         if self.type == 'audio':
             command = "youtube-dl -x {} --audio-format {} {}".format(
-                self.add_time_commands(start, end, 'ffmpeg'), audio_format, entry_url.get())
-            print(command)
-            subprocess.call(command)
+                self.add_time_commands(start, end, 'ffmpeg_pre'), audio_format, entry_url.get())
         elif self.type == 'video':
-        	pass
-        	'''
-			Still a work in progress, unfortunately.
-
-            command = 'youtube-dl {} -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best/bestvideo+bestaudio" --merge-output-format {} {}'.format(
-            	self.add_time_commands(start, end, 'ffmpeg'), video_format, entry_url.get())
-            print(command)
-            title = subprocess.check_output(["youtube-dl", "-f", '"bestvideo[ext=mp4]+bestaudio[ext=m4a]/best/bestvideo+bestaudio"', "--merge-output-format",
-                "mp4", entry_url.get(), "--get-filename"])
-            print("Title: " + title)
-            os.system(command)
-            command = 'HandBrakeCLI {} -i "{}" -o "{}_{}_{}.mp4"'.format(self.add_time_commands(start, end, 'handbrake'),
-                title, title[:-4], start.seconds, end.seconds)
-            os.system(command)
-            '''
+            #1
+            command_url = 'youtube-dl -f "best" -g {}'.format(entry_url.get())
+            url = subprocess.check_output(command_url).decode("utf-8").rstrip()
+            print("URL: {}".format(url))
+            #2
+            command_title = 'youtube-dl --get-filename -f "best" {}'.format(entry_url.get())
+            title = subprocess.check_output(command_title).decode("utf-8").rstrip()[:-4]
+            print("Title: {}".format(title))
+            #3
+            command = 'ffmpeg -i "{}" {} -c copy "{}".{}'.format(url, self.add_time_commands(start, end, 'ffmpeg_only'), title, video_format)
+        print(command)
+        subprocess.call(command)
         self.x.stop()
         self.x.join()
         self.running = False
@@ -141,13 +137,13 @@ class download_thread(threading.Thread):
 
     def add_time_commands(self, start, end, style):
         com = ''
-        if style == 'ffmpeg' and (start.seconds > 0 or end.seconds > 0):
+        if style == 'ffmpeg_pre' and (start.seconds > 0 or end.seconds > 0):
             com += '--postprocessor-args "'
         if start.seconds > 0:
-            com += " {} {} ".format("-ss" if style == 'ffmpeg' else "--start-at", str(start) if style == 'ffmpeg' else "seconds:{}".format(str(start)))
+            com += " {} {} ".format("-ss", str(start))
         if end.seconds > 0:
-            com += " {} {} ".format("-to" if style == 'ffmpeg' else "--stop-at", str(end) if style == 'ffmpeg' else "seconds:{}".format(str(end)))
-        if style == 'ffmpeg' and (start.seconds > 0 or end.seconds > 0):
+            com += " {} {} ".format("-to", str(end))
+        if style == 'ffmpeg_pre' and (start.seconds > 0 or end.seconds > 0):
             com += '"'
         return com
 
@@ -162,21 +158,18 @@ def start_download_video():
     y.start()
 
 def paste():
+    entry_url.delete(0, 'end')
     entry_url.insert(0, pyperclip.paste())
 
 #creating the download button
 dl_button = Button(root, text='Download Audio', command=start_download, bg='brown',fg='white')
 dl_button.grid(row=0, column=5)  
 
-'''
-Code for video download is still work in progress
-
 dl_button = Button(root, text='Download Video', command=start_download_video, bg='brown',fg='white')
-dl_button.grid(row=0, column=6, padx=20)  
-'''
+dl_button.grid(row=0, column=6, padx=20)
 
 #create the paste button
 pt_button = Button(root, text='Incolla', command=paste, bg='brown', fg='white')
-pt_button.grid(row=0, column=6, padx=10)  
+pt_button.grid(row=0, column=7, padx=10)  
 
 root.mainloop()
