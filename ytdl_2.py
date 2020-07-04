@@ -109,21 +109,22 @@ class download_thread(threading.Thread):
     def run(self):
         self.running = True
         start, end = self.check_timings()
-        command=""
+        # get title of the final video/audio file
+        command_title = 'youtube-dl --get-filename -f "best" {}'.format(entry_url.get())
+        #will ignore any non-utf-8 chars in title
+        title = subprocess.check_output(command_title).decode("utf-8", 'ignore').rstrip()[:-4]
+        print("Title: {}".format(title))
+        #downloads
         if self.type == 'audio':
-            command = "youtube-dl -x {} --audio-format {} {}".format(
-                self.add_time_commands(start, end, 'ffmpeg_pre'), audio_format, entry_url.get())
+            command = 'youtube-dl -x {} --audio-format {} -o "{}%(title)s.%(ext)s" {}'.format(
+                self.add_time_commands(start, end, 'ffmpeg_pre'), audio_format,
+                                    os.path.join(folder_text.get(), ''), entry_url.get())
         elif self.type == 'video':
             #1
             command_url = 'youtube-dl -f "best" -g {}'.format(entry_url.get())
             url = subprocess.check_output(command_url).decode("utf-8").rstrip()
             print("URL: {}".format(url))
             #2
-            command_title = 'youtube-dl --get-filename -f "best" {}'.format(entry_url.get())
-            #will ignore any non-utf-8 chars in title
-            title = subprocess.check_output(command_title).decode("utf-8", 'ignore').rstrip()[:-4]
-            print("Title: {}".format(title))
-            #3
             command = 'ffmpeg -i "{}" {} -c copy "{}".{}'.format(url, self.add_time_commands(start, end, 'ffmpeg_only'), 
                                                                 os.path.join(folder_text.get(), title), video_format)
         print(command)
