@@ -140,10 +140,14 @@ class download_thread(threading.Thread):
 
     def check_timings(self):
         start = end = datetime.timedelta(seconds=0)
-        if st_sec.get() != '':
-            start += datetime.timedelta(seconds=int(st_sec.get()) + 60*int(st_min.get() if st_min.get() != '' else 0))
-        if en_sec.get() != '':
-            end += datetime.timedelta(seconds=int(en_sec.get()) + 60*int(en_min.get() if en_min.get() != '' else 0))
+        #starting minute, starting second, ending minute, ending second
+        timings =  list(map(lambda x: int(0 if x == '' else x), [st_min.get(), st_sec.get(), en_min.get(), en_sec.get()]))
+        s_start = 60*timings[0] + timings[1]
+        s_end = 60*timings[2] + timings[3]
+        if s_start > 0:
+            start += datetime.timedelta(seconds=s_start)
+        if s_end > 0:
+            end += datetime.timedelta(seconds=s_end)
         print("Starting time: " + str(start))
         print("Ending time: " + str(end))
         return start, end
