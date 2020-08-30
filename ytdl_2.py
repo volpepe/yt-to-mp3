@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
 from tkinter import *
+import tkinter.filedialog as filedialog
 
-from io import StringIO
 import threading
 import time
 import pyperclip
@@ -99,11 +99,11 @@ class out_show_thread(threading.Thread):
         self.running = False
 
 class download_thread(threading.Thread):
-    def __init__(self, type): 
+    def __init__(self, dl_type): 
         threading.Thread.__init__(self) 
         self.running = False
         self.x = out_show_thread()
-        self.type = type
+        self.type = dl_type
         self.x.start()
 
     def run(self):
@@ -178,6 +178,9 @@ def paste():
     entry_url.delete(0, 'end')
     entry_url.insert(0, pyperclip.paste())
 
+def select_folder():
+    folder_text.set(filedialog.askdirectory(initialdir=folder_text.get(), title="Seleziona Cartella di Destinazione").replace('/', os.sep))
+
 #creating the download button
 dl_button = Button(root, text='Download Audio', command=start_download, bg='brown',fg='white')
 dl_button.grid(row=0, column=5)  
@@ -187,6 +190,10 @@ dl_button.grid(row=0, column=6, padx=20)
 
 #create the paste button
 pt_button = Button(root, text='Incolla', command=paste, bg='brown', fg='white')
-pt_button.grid(row=0, column=7, padx=10)  
+pt_button.grid(row=0, column=7, padx=10)
+
+#create the choose folder button
+fold_button = Button(root, text="Seleziona...", command=select_folder, bg="brown", fg="white")
+fold_button.grid(row=2, column=5, pady=15, padx=2, sticky=W)
 
 root.mainloop()
