@@ -20,8 +20,8 @@ video_format = "mp4"
 
 #check for yt-dl updates
 print("Controllo aggiornamenti...")
-subprocess.call("python -m pip install --upgrade pip")
-subprocess.call("python -m pip install --upgrade youtube_dl")
+subprocess.call("python -m pip install --upgrade pip", shell=True)
+subprocess.call("python -m pip install --upgrade youtube_dl", shell=True)
 print("OK.")
 
 if len(sys.argv) > 1:
@@ -123,7 +123,7 @@ else:
             # get title of the final video/audio file
             command_title = 'youtube-dl --get-filename -f "best" {}'.format(entry_url.get())
             #will ignore any non-utf-8 chars in title
-            title = subprocess.check_output(command_title).decode("utf-8", 'ignore').rstrip()[:-4]
+            title = subprocess.check_output(command_title, shell=True).decode("utf-8", 'ignore').rstrip()[:-4]
             print("Title: {}".format(title))
             #downloads
             if self.type == 'audio':
@@ -133,7 +133,7 @@ else:
             elif self.type == 'video':
                 #1
                 command_url = 'youtube-dl -f "best" -g {}'.format(entry_url.get())
-                url = subprocess.check_output(command_url).decode("utf-8").rstrip()
+                url = subprocess.check_output(command_url, shell=True).decode("utf-8").rstrip()
                 print("URL: {}".format(url))
                 #2
                 command = 'ffmpeg -i "{}" {} -c copy "{}".{}'.format(url, self.add_time_commands(start, end, 'ffmpeg_only'), 
