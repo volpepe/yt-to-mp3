@@ -139,7 +139,7 @@ else:
                 command = 'ffmpeg -i "{}" {} -c copy "{}".{}'.format(url, self.add_time_commands(start, end, 'ffmpeg_only'), 
                                                                     os.path.join(folder_text.get(), title), video_format)
             print(command)
-            subprocess.call(command)
+            subprocess.call(command, shell=True)
             self.x.stop()
             self.x.join()
             self.running = False
