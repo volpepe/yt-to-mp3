@@ -1,0 +1,3 @@
+pyperclip
+youtube_dl
+wheel
