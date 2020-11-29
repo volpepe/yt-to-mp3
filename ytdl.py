@@ -120,24 +120,32 @@ else:
         def run(self):
             self.running = True
             start, end = self.check_timings()
+            start_string = str(start).replace(':', '_')
+            end_string = str(end).replace(':','_')
             # get title of the final video/audio file
             command_title = 'youtube-dl --get-filename -f "best" {}'.format(entry_url.get())
             #will ignore any non-utf-8 chars in title
             try:
                 title = subprocess.check_output(command_title, shell=True).decode("utf-8", 'ignore').rstrip()[:-4]
+                if start > datetime.timedelta(seconds=0) or end > datetime.timedelta(seconds=0):
+                    title = '_'.join([title, start_string, end_string])
             except subprocess.CalledProcessError:
                 self.stop_execution('Errore!!!')
                 return
             print("Title: {}".format(title))
             #downloads
             if self.type == 'audio':
-                command = 'youtube-dl -x {} --audio-format {} -o "{}%(title)s.%(ext)s" {}'.format(
+                command = 'youtube-dl -x {} --audio-format {} -o "{}.%(ext)s" {}'.format(
                     self.add_time_commands(start, end, 'ffmpeg_pre'), audio_format,
-                                        os.path.join(folder_text.get(), ''), entry_url.get())
+                                        os.path.join(folder_text.get(), title), entry_url.get())
             elif self.type == 'video':
                 #1
                 command_url = 'youtube-dl -f "best" -g {}'.format(entry_url.get())
-                url = subprocess.check_output(command_url, shell=True).decode("utf-8").rstrip()
+                try:
+                    url = subprocess.check_output(command_url, shell=True).decode("utf-8").rstrip()
+                except subprocess.CalledProcessError:
+                    self.stop_execution('Errore!!!')
+                    return
                 print("URL: {}".format(url))
                 #2
                 command = 'ffmpeg -i "{}" {} -c copy "{}".{}'.format(url, 
